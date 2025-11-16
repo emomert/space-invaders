@@ -1,8 +1,8 @@
-import { neon } from '@netlify/neon';
+const { neon } = require('@netlify/neon');
 
 const sql = neon(process.env.NETLIFY_DATABASE_URL);
 
-export const handler = async () => {
+exports.handler = async () => {
   try {
     const rows = await sql`
       select id, name, score, wave, enemies_killed, created_at
