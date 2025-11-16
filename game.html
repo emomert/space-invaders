@@ -1309,28 +1309,62 @@
             }
         }
 
-        function saveScore() {
+        async function saveScore() {
             if (!isGameOver || hasSavedScore) return;
             const input = document.getElementById('playerNameInput');
             const saveButton = document.getElementById('saveScoreButton');
             const name = (input && input.value.trim()) || 'Defender';
+            const sanitizedName = name.substring(0, 18);
 
-            const entry = {
-                name: name.substring(0, 18),
+            const payload = {
+                name: sanitizedName,
                 score,
                 wave,
-                enemiesKilled,
+                enemiesKilled
+            };
+            const localEntry = {
+                ...payload,
                 date: Date.now()
             };
+
+            persistLocalScore(localEntry);
+            hasSavedScore = true;
+
+            if (saveButton) {
+                saveButton.disabled = true;
+                saveButton.textContent = 'Saving...';
+            }
+
+            let syncedOnline = false;
+            try {
+                const response = await fetch('/.netlify/functions/save-score', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const message = await response.text();
+                    throw new Error(message || 'Failed to save score');
+                }
+
+                syncedOnline = true;
+            } catch (error) {
+                console.error('Failed to sync score online. Score stored locally only.', error);
+            }
+
+            if (saveButton) {
+                saveButton.textContent = syncedOnline ? 'Saved!' : 'Saved Locally';
+            }
+        }
+
+        function persistLocalScore(entry) {
             const existing = JSON.parse(localStorage.getItem('highScores') || '[]');
             existing.push(entry);
-            existing.sort((a, b) => b.score - a.score);
+            existing.sort((a, b) => (b.score || 0) - (a.score || 0));
             localStorage.setItem('highScores', JSON.stringify(existing.slice(0, 50)));
-            hasSavedScore = true;
-            if (saveButton) {
-                saveButton.textContent = 'Saved!';
-                saveButton.disabled = true;
-            }
         }
 
         function ensureAudioContext() {

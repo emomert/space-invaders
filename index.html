@@ -350,7 +350,7 @@
         <a href="game.html" class="start-button">START GAME</a>
         
         <div class="high-scores">
-            <h2>🏆 High Scores</h2>
+            <h2>High Scores</h2>
             <div id="scoreList">
                 <p class="no-scores">No scores yet. Be the first champion!</p>
             </div>
@@ -360,23 +360,61 @@
     <script>
         
         // Load and display high scores
-        function loadHighScores() {
-            const highScores = JSON.parse(localStorage.getItem('highScores') || '[]');
+        async function loadHighScores() {
             const scoreList = document.getElementById('scoreList');
+            if (!scoreList) return;
+            scoreList.innerHTML = '<p class="no-scores">Loading leaderboard...</p>';
             
-            if (highScores.length === 0) {
+            try {
+                const response = await fetch('/.netlify/functions/list-scores');
+                if (!response.ok) throw new Error('Network error while loading scores');
+                const remoteScores = await response.json();
+                
+                if (!Array.isArray(remoteScores) || remoteScores.length === 0) {
+                    scoreList.innerHTML = '<p class="no-scores">No scores yet. Be the first champion!</p>';
+                    return;
+                }
+                
+                const listHTML = remoteScores.slice(0, 10).map((score, index) => {
+                    const date = score.created_at
+                        ? new Date(score.created_at).toLocaleDateString()
+                        : new Date().toLocaleDateString();
+                    const name = (score.name || 'Anonymous').replace(/</g, '&lt;');
+                    const kills = typeof score.enemies_killed === 'number'
+                        ? score.enemies_killed
+                        : score.enemiesKilled || 0;
+                    return `
+                        <div class="score-item">
+                            <span class="score-rank">#${index + 1}</span>
+                            <span class="score-value">${Number(score.score || 0).toLocaleString()}</span>
+                            <span class="score-details">${name} &bull; Wave ${score.wave || 1} &bull; ${kills} kills &bull; ${date}</span>
+                        </div>
+                    `;
+                }).join('');
+                
+                scoreList.innerHTML = `<div class="score-list">${listHTML}</div>`;
+            } catch (error) {
+                console.error('Failed to load online scores, using local fallback.', error);
+                renderLocalScores(scoreList);
+            }
+        }
+        
+        function renderLocalScores(scoreList) {
+            const fallback = JSON.parse(localStorage.getItem('highScores') || '[]');
+            if (fallback.length === 0) {
                 scoreList.innerHTML = '<p class="no-scores">No scores yet. Be the first champion!</p>';
                 return;
             }
             
-            const listHTML = highScores.slice(0, 10).map((score, index) => {
-                const date = new Date(score.date).toLocaleDateString();
+            const listHTML = fallback.slice(0, 10).map((score, index) => {
+                const date = new Date(score.date || Date.now()).toLocaleDateString();
                 const name = (score.name || 'Anonymous').replace(/</g, '&lt;');
+                const kills = score.enemiesKilled || 0;
                 return `
                     <div class="score-item">
                         <span class="score-rank">#${index + 1}</span>
-                        <span class="score-value">${score.score.toLocaleString()}</span>
-                        <span class="score-details">${name} • Wave ${score.wave} • ${score.enemiesKilled} kills • ${date}</span>
+                        <span class="score-value">${Number(score.score || 0).toLocaleString()}</span>
+                        <span class="score-details">${name} &bull; Wave ${score.wave || 1} &bull; ${kills} kills &bull; ${date}</span>
                     </div>
                 `;
             }).join('');
