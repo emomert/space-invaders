@@ -727,7 +727,16 @@
             attemptShoot();
         }
 
+        function isTextInputTarget(target) {
+            if (!target) return false;
+            const tag = target.tagName;
+            return tag === 'INPUT' || tag === 'TEXTAREA' || target.isContentEditable;
+        }
+
         function handleKeyDown(event) {
+            if (isTextInputTarget(event.target)) {
+                return;
+            }
             switch (event.code) {
                 case 'KeyW':
                     moveState.forward = true;
