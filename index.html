@@ -129,6 +129,7 @@
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 15px;
             margin: 25px 0;
+            justify-items: stretch;
         }
 
         .control-item {
@@ -137,6 +138,15 @@
             border-radius: 8px;
             border: 1px solid rgba(0, 238, 255, 0.2);
             color: #b1c7ff;
+        }
+
+        .control-item.enemy-card {
+            text-align: center;
+            border-color: rgba(255, 138, 92, 0.35);
+            box-shadow: 0 10px 30px rgba(255, 138, 92, 0.15);
+            grid-column: span 2;
+            justify-self: center;
+            max-width: 260px;
         }
 
         .control-item strong {
@@ -245,6 +255,30 @@
             color: #3ad7ff;
         }
 
+        .project-link {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .project-link a {
+            color: #66e0ff;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            gap: 8px;
+            align-items: center;
+            border: 1px solid rgba(102, 224, 255, 0.4);
+            padding: 10px 18px;
+            border-radius: 999px;
+            transition: background 0.3s, color 0.3s, border 0.3s;
+        }
+
+        .project-link a:hover {
+            background: rgba(102, 224, 255, 0.15);
+            color: #bfe8ff;
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
         @media (max-width: 768px) {
             h1 { font-size: 48px; }
             .container { 
@@ -255,6 +289,10 @@
             .controls { 
                 grid-template-columns: 1fr; 
                 gap: 10px;
+            }
+            .control-item.enemy-card {
+                grid-column: span 1;
+                max-width: none;
             }
             .difficulty-buttons { 
                 flex-direction: column; 
@@ -338,6 +376,14 @@
                     <strong>Wave Progression</strong>
                     Enemies get faster each wave
                 </div>
+                <div class="control-item enemy-card">
+                    <strong>Crimson Chargers</strong>
+                    Red assault drones that sprint in straight lines. Strafe or sprint early before they slam into you.
+                </div>
+                <div class="control-item enemy-card">
+                    <strong>Aurora Floaters</strong>
+                    Green bobbing spheres that weave above the arena. Their erratic arcs make them perfect long-range targets.
+                </div>
             </div>
             <p><strong>Objective:</strong> Eliminate as many alien invaders as possible before they reach your position!</p>
             <p><strong>Scoring:</strong> Earn 100 points per kill plus distance bonuses for long-range shots.</p>
@@ -354,6 +400,12 @@
             <div id="scoreList">
                 <p class="no-scores">No scores yet. Be the first champion!</p>
             </div>
+        </div>
+
+        <div class="project-link">
+            <a href="https://github.com/emomert/space-invaders" target="_blank" rel="noopener">
+                View project on GitHub
+            </a>
         </div>
     </div>
 
