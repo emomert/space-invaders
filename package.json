@@ -4,7 +4,8 @@
   "description": "Space Defender is a browser-based first-person survival shooter inspired by classic space-invader tension. It blends a cinematic landing screen with a fully interactive arena built with Three.js so you can fight waves of neon-tinted drones right inside the browser without plug-ins or installs.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "clear-scores": "node scripts/clear-scores.js"
   },
   "repository": {
     "type": "git",
