@@ -39,6 +39,8 @@ export class EnemyManager {
         this.lastSpawnTime = 0;
         this.spawnRate = 1500;
         this.enemySpeed = 0.045;
+        this.fastSpawnTicker = 0;
+        this.forceFastInterval = 6;
         this.wave = 1;
 
         this.tmpVec = new THREE.Vector3();
@@ -84,7 +86,18 @@ export class EnemyManager {
         const distance = 35 + Math.random() * 15;
         const height = 1 + Math.random() * 2;
 
-        const spawnFast = Math.random() < 0.18;
+        let spawnFast = false;
+        const fastChance = Math.min(0.45, 0.18 + (this.wave - 1) * 0.02);
+        this.fastSpawnTicker++;
+
+        if (this.fastSpawnTicker >= this.forceFastInterval) {
+            spawnFast = true;
+            this.fastSpawnTicker = 0;
+        } else if (Math.random() < fastChance) {
+            spawnFast = true;
+            this.fastSpawnTicker = 0;
+        }
+
         const spawnBobbing = !spawnFast && Math.random() < 0.25;
 
         const mesh = this.getFromPool();
@@ -212,11 +225,14 @@ export class EnemyManager {
         this.wave = 1;
         this.spawnRate = 1500;
         this.enemySpeed = 0.045;
+        this.fastSpawnTicker = 0;
+        this.forceFastInterval = 6;
     }
 
     updateWave(wave) {
         this.wave = wave;
         this.spawnRate = Math.max(350, 1500 - (this.wave - 1) * 160);
         this.enemySpeed = 0.045 + (this.wave - 1) * 0.012;
+        this.forceFastInterval = Math.max(2, 6 - Math.floor(this.wave / 3));
     }
 }
