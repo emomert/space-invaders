@@ -71,6 +71,11 @@ export class Game {
         document.addEventListener('keydown', (e) => this.handleKeyDown(e));
         document.addEventListener('pointerlockchange', () => this.handlePointerLockChange());
 
+        // Save Score Button Listener
+        if (this.uiManager.saveButton) {
+            this.uiManager.saveButton.addEventListener('click', () => this.saveScore());
+        }
+
         // UI Init
         this.uiManager.updateAmmo(this.weapon.ammo, this.weapon.maxAmmo, false);
         this.uiManager.updateScore(0);
@@ -303,6 +308,59 @@ export class Game {
             particle.mesh.material.opacity = Math.max(0, particle.life / particle.maxLife);
             return true;
         });
+    }
+
+    async saveScore() {
+        const nameInput = document.getElementById('playerNameInput');
+        const name = nameInput.value.trim() || 'Unknown Pilot';
+
+        const scoreData = {
+            name: name,
+            score: this.score,
+            wave: this.wave,
+            date: new Date().toISOString()
+        };
+
+        // 1. Save to LocalStorage (Always do this as backup/offline)
+        try {
+            const localScores = JSON.parse(localStorage.getItem('highScores') || '[]');
+            localScores.push(scoreData);
+            localScores.sort((a, b) => b.score - a.score);
+            localStorage.setItem('highScores', JSON.stringify(localScores.slice(0, 10)));
+            console.log('Score saved locally');
+        } catch (e) {
+            console.error('Local save failed:', e);
+        }
+
+        // 2. Try to save to Cloud (Netlify Functions)
+        const btn = this.uiManager.saveButton;
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+        }
+
+        try {
+            const response = await fetch('/.netlify/functions/save-score', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(scoreData)
+            });
+
+            if (response.ok) {
+                if (btn) btn.textContent = 'Saved!';
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1000);
+            } else {
+                throw new Error('Server error');
+            }
+        } catch (e) {
+            console.warn('Cloud save failed, falling back to local only:', e);
+            if (btn) btn.textContent = 'Saved Locally';
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 1000);
+        }
     }
 
     gameOver() {
