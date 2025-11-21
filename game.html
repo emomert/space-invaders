@@ -416,6 +416,19 @@
             text-shadow: 0 0 15px #00ffff, 0 0 30px #00ffff, 0 0 45px #00ffff;
             transform: scale(1.05);
         }
+
+        #dangerVignette {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 90;
+            background: radial-gradient(circle, transparent 50%, rgba(255, 0, 0, 0.8) 100%);
+            opacity: 0;
+            transition: opacity 0.2s ease-out;
+        }
     </style>
 </head>
 
@@ -425,6 +438,7 @@
         <p>Loading Space Defender...</p>
     </div>
 
+    <div id="dangerVignette"></div>
     <div id="gameCanvas"></div>
 
     <div id="ui">

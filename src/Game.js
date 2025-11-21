@@ -303,6 +303,19 @@ export class Game {
         });
     }
 
+    gameOver() {
+        if (this.isGameOver) return;
+        this.isGameOver = true;
+        this.gameRunning = false;
+        this.isPaused = false;
+
+        if (document.pointerLockElement) {
+            document.exitPointerLock();
+        }
+
+        this.uiManager.showGameOver(this.score, this.wave, this.enemiesKilled);
+    }
+
     pauseGame() {
         if (this.isPaused || this.isGameOver) return;
         this.isPaused = true;

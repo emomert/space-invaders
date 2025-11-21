@@ -21,6 +21,7 @@ export class UIManager {
         this.finalWaveEl = document.getElementById('finalWave');
         this.enemiesKilledEl = document.getElementById('enemiesKilled');
         this.saveButton = document.getElementById('saveScoreButton');
+        this.dangerVignette = document.getElementById('dangerVignette');
     }
 
     hideLoading() {
@@ -48,12 +49,20 @@ export class UIManager {
         if (!isFinite(distance)) {
             this.dangerFill.style.width = '0%';
             this.dangerFill.style.background = 'linear-gradient(90deg, #00ffa3, #ffdd00, #ff0066)';
+            if (this.dangerVignette) this.dangerVignette.style.opacity = 0;
             return;
         }
 
         const maxDistance = 35;
         const danger = Math.min(1, Math.max(0, 1 - distance / maxDistance));
         this.dangerFill.style.width = `${danger * 100}%`;
+
+        // Update Vignette Opacity
+        if (this.dangerVignette) {
+            // Start showing vignette when danger is > 0.3, max opacity at danger 1.0
+            const vignetteOpacity = Math.max(0, (danger - 0.3) / 0.7);
+            this.dangerVignette.style.opacity = vignetteOpacity;
+        }
 
         if (danger > 0.75) {
             this.dangerFill.style.background = '#ff2a6d';
