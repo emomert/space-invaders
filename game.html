@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Space Defender - FPS Shooter</title>
+    <link rel="icon" type="image/png" href="favicon.png">
     <style>
         * {
             margin: 0;
@@ -436,6 +437,7 @@
             Click to lock mouse - WASD to move - Shift to sprint - Move mouse to aim - Click to shoot - R to reload -
             ESC to pause
         </div>
+
         <div id="statusBars">
             <div class="status-row">
                 <div class="status-label">Danger</div>
@@ -447,6 +449,13 @@
                 <div class="status-label">Stamina</div>
                 <div class="status-bar" id="staminaBar">
                     <div class="status-fill" id="staminaFill"></div>
+                </div>
+            </div>
+            <div class="status-row">
+                <div class="status-label">Shield</div>
+                <div class="status-bar" id="shieldBar" style="border-color: rgba(0, 255, 255, 0.5);">
+                    <div class="status-fill" id="shieldFill"
+                        style="width: 0%; background: #00ffff; box-shadow: 0 0 15px rgba(0, 255, 255, 0.6);"></div>
                 </div>
             </div>
         </div>
@@ -473,7 +482,6 @@
             <a href="index.html" class="button">Main Menu</a>
         </div>
     </div>
-
 
     <script type="module" src="src/main.js"></script>
 </body>

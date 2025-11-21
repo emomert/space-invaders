@@ -4,6 +4,7 @@ import { Weapon } from './Weapon.js';
 import { EnemyManager } from './EnemyManager.js';
 import { UIManager } from './UIManager.js';
 import { AudioManager } from './AudioManager.js';
+import { PowerUpManager } from './PowerUpManager.js';
 import { disposeMaterial } from './Utils.js';
 
 export class Game {
@@ -18,6 +19,7 @@ export class Game {
         this.enemyManager = null;
         this.uiManager = new UIManager();
         this.audioManager = new AudioManager();
+        // PowerUpManager instantiated in init
 
         this.particles = [];
 
@@ -60,6 +62,7 @@ export class Game {
         this.player = new Player(this.scene, this.camera, this.renderer.domElement);
         this.weapon = new Weapon(this.camera);
         this.enemyManager = new EnemyManager(this.scene);
+        this.powerUpManager = new PowerUpManager(this.scene);
 
         // Events
         window.addEventListener('resize', () => this.handleResize());
@@ -176,6 +179,7 @@ export class Game {
 
     handleMouseDown(event) {
         if (event.button !== 0) return;
+        if (event.target !== this.renderer.domElement) return;
         if (this.isGameOver) return;
 
         if (!this.player.isPointerLocked) {
@@ -192,10 +196,6 @@ export class Game {
             this.weapon.reload();
             this.uiManager.updateAmmo(this.weapon.ammo, this.weapon.maxAmmo, this.weapon.isReloading);
         } else if (event.code === 'Escape') {
-            // ESC key is handled by pointerlockchange for pausing, 
-            // but we might want to toggle if already paused?
-            // Actually, let's rely on pointerlockchange for pausing when lock is lost.
-            // But if we are in the menu, ESC might resume?
             if (this.isPaused) this.resumeGame();
             else if (!this.isGameOver) this.pauseGame();
         } else if (event.code === 'KeyP') {
@@ -210,7 +210,7 @@ export class Game {
         const isLocked = document.pointerLockElement === this.renderer.domElement;
         this.player.isPointerLocked = isLocked;
 
-        if (!isLocked && !this.isPaused && !this.isGameOver) {
+        if (!isLocked && !this.isPaused && !this.isGameOver && this.gameRunning) {
             this.pauseGame();
         }
 
@@ -354,8 +354,7 @@ export class Game {
         this.weapon.cancelReload();
         if (document.pointerLockElement) document.exitPointerLock();
         this.uiManager.showGameOver(this.score, this.wave, this.enemiesKilled);
-        // Optional: Stop music or play game over sound
-        // this.audioManager.stopMusic(); 
+        this.uiManager.setupScoreSaving(this.score, this.wave, this.enemiesKilled);
     }
 
     playGunSound() {
@@ -365,7 +364,7 @@ export class Game {
     animate() {
         requestAnimationFrame(() => this.animate());
 
-        const delta = this.clock.getDelta();
+        const delta = Math.min(this.clock.getDelta(), 0.1);
         const time = this.clock.elapsedTime;
 
         // Game Logic
@@ -380,13 +379,34 @@ export class Game {
             const isRunning = this.player.update(delta);
             this.uiManager.updateStamina(this.player.stamina, this.player.maxStamina);
 
+            // PowerUps
+            this.powerUpManager.spawn(performance.now());
+            const collectedType = this.powerUpManager.update(delta, this.player.getPosition(), this.player.hasShield);
+            if (collectedType === 'shield') {
+                this.player.activateShield();
+                this.uiManager.updateShield(true);
+            }
+
             // Enemies
             this.enemyManager.spawn(performance.now());
             const closestDist = this.enemyManager.update(delta, this.player.getPosition(), time);
             this.uiManager.updateDanger(closestDist);
 
             if (closestDist <= 1.5) {
-                this.gameOver();
+                if (this.player.hasShield) {
+                    // Consume shield
+                    this.player.deactivateShield();
+                    this.uiManager.updateShield(false);
+
+                    // Find and remove the hitting enemy
+                    const hittingEnemy = this.enemyManager.getClosestEnemy(this.player.getPosition());
+                    if (hittingEnemy && hittingEnemy.mesh.position.distanceTo(this.player.getPosition()) <= 1.6) {
+                        this.enemyManager.removeEnemy(hittingEnemy);
+                        this.createImpactBurst(hittingEnemy.mesh.position);
+                    }
+                } else {
+                    this.gameOver();
+                }
             }
 
             // Weapon UI sync (reloading animation)

@@ -34,8 +34,18 @@ export class Player {
         this.staminaRegenRate = 18;
 
         this.isPointerLocked = false;
+        this.hasShield = false;
 
         this.setupEventListeners();
+    }
+
+    activateShield() {
+        this.hasShield = true;
+        // Visual effect could be added here, e.g. a HUD overlay or sound
+    }
+
+    deactivateShield() {
+        this.hasShield = false;
     }
 
     setupEventListeners() {

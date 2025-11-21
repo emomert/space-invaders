@@ -10,6 +10,7 @@ export class UIManager {
 
         this.dangerFill = document.getElementById('dangerFill');
         this.staminaFill = document.getElementById('staminaFill');
+        this.shieldFill = document.getElementById('shieldFill');
 
         this.gameOverEl = document.getElementById('gameOver');
         this.pauseMenuEl = document.getElementById('pauseMenu');
@@ -69,6 +70,11 @@ export class UIManager {
         this.staminaFill.style.width = `${Math.max(0, Math.min(100, percent))}%`;
     }
 
+    updateShield(active) {
+        if (!this.shieldFill) return;
+        this.shieldFill.style.width = active ? '100%' : '0%';
+    }
+
     showGameOver(score, wave, killed) {
         if (this.gameOverEl) {
             this.gameOverEl.style.display = 'block';
@@ -90,6 +96,7 @@ export class UIManager {
     }
 
     showPauseMenu() {
+        if (this.loadingEl) this.loadingEl.style.display = 'none';
         if (this.pauseMenuEl) this.pauseMenuEl.style.display = 'block';
         document.body.classList.remove('cursor-hidden');
     }
@@ -108,5 +115,63 @@ export class UIManager {
         } else {
             document.body.classList.add('cursor-hidden');
         }
+    }
+
+    setupScoreSaving(score, wave, enemiesKilled) {
+        if (!this.saveButton) return;
+
+        const playerNameInput = document.getElementById('playerNameInput');
+
+        // Remove any existing event listeners by cloning the button
+        const newButton = this.saveButton.cloneNode(true);
+        this.saveButton.parentNode.replaceChild(newButton, this.saveButton);
+        this.saveButton = newButton;
+
+        this.saveButton.addEventListener('click', async () => {
+            const name = (playerNameInput?.value || 'Anonymous').trim().substring(0, 18);
+
+            // Disable button to prevent double submission
+            this.saveButton.disabled = true;
+            this.saveButton.textContent = 'Saving...';
+
+            const scoreData = {
+                name,
+                score,
+                wave,
+                enemiesKilled
+            };
+
+            try {
+                // Try to save to Netlify
+                const response = await fetch('/.netlify/functions/save-score', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(scoreData)
+                });
+
+                if (response.ok) {
+                    this.saveButton.textContent = '✓ Saved!';
+                    this.saveButton.style.background = 'linear-gradient(135deg, #00ff88, #00cc66)';
+                } else {
+                    throw new Error('Network response was not ok');
+                }
+            } catch (error) {
+                console.log('Saving to localStorage (offline mode)');
+
+                // Fallback to localStorage
+                const localScores = JSON.parse(localStorage.getItem('highScores') || '[]');
+                localScores.push({
+                    ...scoreData,
+                    created_at: new Date().toISOString()
+                });
+
+                // Sort by score descending and keep top 50
+                localScores.sort((a, b) => b.score - a.score);
+                localStorage.setItem('highScores', JSON.stringify(localScores.slice(0, 50)));
+
+                this.saveButton.textContent = '✓ Saved Offline';
+                this.saveButton.style.background = 'linear-gradient(135deg, #ffaa00, #ff8800)';
+            }
+        });
     }
 }

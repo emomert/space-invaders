@@ -235,4 +235,17 @@ export class EnemyManager {
         this.enemySpeed = 0.045 + (this.wave - 1) * 0.012;
         this.forceFastInterval = Math.max(2, 6 - Math.floor(this.wave / 3));
     }
+    getClosestEnemy(position) {
+        let closest = null;
+        let minDist = Infinity;
+
+        for (const enemy of this.enemies) {
+            const dist = enemy.mesh.position.distanceTo(position);
+            if (dist < minDist) {
+                minDist = dist;
+                closest = enemy;
+            }
+        }
+        return closest;
+    }
 }
