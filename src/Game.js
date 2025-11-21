@@ -30,6 +30,7 @@ export class Game {
         this.gameRunning = false;
         this.isPaused = false;
         this.isGameOver = false;
+        this.hasStartedPlaying = false; // Track if player has actually started playing
 
         this.init();
     }
@@ -210,7 +211,8 @@ export class Game {
         const isLocked = document.pointerLockElement === this.renderer.domElement;
         this.player.isPointerLocked = isLocked;
 
-        if (!isLocked && !this.isPaused && !this.isGameOver && this.gameRunning) {
+        // Only auto-pause if player has actually started playing
+        if (!isLocked && !this.isPaused && !this.isGameOver && this.gameRunning && this.hasStartedPlaying) {
             this.pauseGame();
         }
 
@@ -305,6 +307,7 @@ export class Game {
         if (this.isPaused || this.isGameOver) return;
         this.isPaused = true;
         this.gameRunning = false;
+        this.hasStartedPlaying = false; // Reset flag so resume gets the grace period
         this.uiManager.showPauseMenu();
         if (document.pointerLockElement) document.exitPointerLock();
     }
@@ -320,6 +323,11 @@ export class Game {
         // Re-acquire pointer lock
         this.renderer.domElement.requestPointerLock();
         this.audioManager.resume();
+
+        // Set flag after a short delay to allow pointer lock to establish
+        setTimeout(() => {
+            this.hasStartedPlaying = true;
+        }, 200);
     }
 
     restartGame() {
@@ -345,20 +353,11 @@ export class Game {
         this.enemyManager.lastSpawnTime = performance.now();
         this.renderer.domElement.requestPointerLock();
         this.audioManager.startMusic();
-    }
 
-    gameOver() {
-        if (this.isGameOver) return;
-        this.isGameOver = true;
-        this.gameRunning = false;
-        this.weapon.cancelReload();
-        if (document.pointerLockElement) document.exitPointerLock();
-        this.uiManager.showGameOver(this.score, this.wave, this.enemiesKilled);
-        this.uiManager.setupScoreSaving(this.score, this.wave, this.enemiesKilled);
-    }
-
-    playGunSound() {
-        // Deprecated: Use audioManager
+        // Set flag after a short delay to allow pointer lock to establish
+        setTimeout(() => {
+            this.hasStartedPlaying = true;
+        }, 200);
     }
 
     animate() {

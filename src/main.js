@@ -5,10 +5,12 @@ window.addEventListener('load', () => {
 });
 
 // Expose global functions for HTML buttons (Restart, Resume)
-window.restartGame = () => {
+window.restartGame = (event) => {
+    if (event) event.stopPropagation();
     if (window.game) window.game.restartGame();
 };
 
-window.resumeGame = () => {
+window.resumeGame = (event) => {
+    if (event) event.stopPropagation();
     if (window.game) window.game.resumeGame();
 };

@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Space Defender - FPS Shooter</title>
     <link rel="icon" type="image/png" href="favicon.png">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap"
+        rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -44,46 +47,27 @@
             position: absolute;
             top: 30px;
             left: 30px;
-            font-size: 24px;
-            font-weight: bold;
-            text-shadow: 0 5px 20px rgba(0, 255, 255, 0.25);
-            background: rgba(6, 11, 22, 0.85);
-            padding: 10px 20px;
-            border-radius: 5px;
-            border: 1px solid rgba(0, 255, 213, 0.3);
-            color: #e6f2ff;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.6), 0 0 20px rgba(0, 255, 255, 0.4);
+            letter-spacing: 2px;
+            background: transparent;
         }
 
         #wave {
             position: absolute;
             top: 30px;
             right: 30px;
-            font-size: 18px;
-            font-weight: bold;
-            text-shadow: 0 5px 20px rgba(0, 255, 255, 0.25);
-            background: rgba(6, 11, 22, 0.85);
-            padding: 10px 20px;
-            border-radius: 5px;
-            border: 1px solid rgba(0, 255, 213, 0.3);
-            color: #e6f2ff;
-        }
-
-        #ammoStatus {
-            position: absolute;
-            bottom: 30px;
-            right: 30px;
-            min-width: 160px;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 6px;
-        }
-
-        #ammoBadge {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 32px;
+            font-weight: 700;
             text-transform: uppercase;
-            font-size: 12px;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(255, 0, 102, 0.6), 0 0 20px rgba(255, 0, 102, 0.4);
             letter-spacing: 2px;
-            color: rgba(255, 255, 255, 0.6);
         }
 
         #ammoValueWrapper {
@@ -164,29 +148,37 @@
 
         #instructions {
             position: absolute;
-            bottom: 30px;
+            top: 30px;
             left: 50%;
             transform: translateX(-50%);
             text-align: center;
             font-size: 14px;
-            opacity: 0.9;
-            background: rgba(10, 16, 28, 0.9);
-            padding: 10px 20px;
-            border-radius: 5px;
-            border: 1px solid rgba(0, 238, 255, 0.25);
-            color: #d0e4ff;
+            opacity: 0.8;
+            color: #9ddcff;
+            text-shadow: 0 0 5px rgba(157, 220, 255, 0.5);
+            pointer-events: none;
+            letter-spacing: 1px;
+            width: 100%;
         }
 
         #statusBars {
             position: absolute;
-            bottom: 70px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 480px;
-            max-width: 90vw;
+            bottom: 30px;
+            right: 30px;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 15px;
+            align-items: flex-end;
+            z-index: 100;
+        }
+
+        #ammoStatus {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
         }
 
         .status-row {
@@ -212,6 +204,7 @@
             border: 1px solid rgba(0, 255, 255, 0.2);
             overflow: hidden;
             box-shadow: 0 0 15px rgba(0, 255, 255, 0.08);
+            width: 150px;
         }
 
         .status-fill {
@@ -402,9 +395,26 @@
             }
         }
 
-        /* Show cursor when game is over */
         .game-over-cursor {
             cursor: auto !important;
+        }
+
+        #shieldIndicator {
+            text-align: center;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.15);
+            margin-bottom: 15px;
+            transition: all 0.2s ease;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+        }
+
+        #shieldIndicator.active {
+            color: #00ffff;
+            text-shadow: 0 0 15px #00ffff, 0 0 30px #00ffff, 0 0 45px #00ffff;
+            transform: scale(1.05);
         }
     </style>
 </head>
@@ -439,6 +449,7 @@
         </div>
 
         <div id="statusBars">
+            <div id="shieldIndicator">SHIELD</div>
             <div class="status-row">
                 <div class="status-label">Danger</div>
                 <div class="status-bar" id="dangerBar">
@@ -449,13 +460,6 @@
                 <div class="status-label">Stamina</div>
                 <div class="status-bar" id="staminaBar">
                     <div class="status-fill" id="staminaFill"></div>
-                </div>
-            </div>
-            <div class="status-row">
-                <div class="status-label">Shield</div>
-                <div class="status-bar" id="shieldBar" style="border-color: rgba(0, 255, 255, 0.5);">
-                    <div class="status-fill" id="shieldFill"
-                        style="width: 0%; background: #00ffff; box-shadow: 0 0 15px rgba(0, 255, 255, 0.6);"></div>
                 </div>
             </div>
         </div>
@@ -470,15 +474,15 @@
                 <input type="text" id="playerNameInput" maxlength="18" placeholder="Defender" />
                 <button class="button" id="saveScoreButton">Save Score</button>
             </div>
-            <button class="button" onclick="restartGame()">Play Again</button>
+            <button class="button" onclick="restartGame(event)">Play Again</button>
             <a href="index.html" class="button">Main Menu</a>
         </div>
 
         <div id="pauseMenu">
             <h2>PAUSED</h2>
             <p>Take a breath, Defender.</p>
-            <button class="button" onclick="resumeGame()">Resume</button>
-            <button class="button" onclick="restartGame()">Restart</button>
+            <button class="button" onclick="resumeGame(event)">Resume</button>
+            <button class="button" onclick="restartGame(event)">Restart</button>
             <a href="index.html" class="button">Main Menu</a>
         </div>
     </div>

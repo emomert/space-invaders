@@ -10,7 +10,7 @@ export class UIManager {
 
         this.dangerFill = document.getElementById('dangerFill');
         this.staminaFill = document.getElementById('staminaFill');
-        this.shieldFill = document.getElementById('shieldFill');
+        this.shieldIndicator = document.getElementById('shieldIndicator');
 
         this.gameOverEl = document.getElementById('gameOver');
         this.pauseMenuEl = document.getElementById('pauseMenu');
@@ -71,8 +71,12 @@ export class UIManager {
     }
 
     updateShield(active) {
-        if (!this.shieldFill) return;
-        this.shieldFill.style.width = active ? '100%' : '0%';
+        if (!this.shieldIndicator) return;
+        if (active) {
+            this.shieldIndicator.classList.add('active');
+        } else {
+            this.shieldIndicator.classList.remove('active');
+        }
     }
 
     showGameOver(score, wave, killed) {
