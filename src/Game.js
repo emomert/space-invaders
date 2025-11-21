@@ -203,7 +203,9 @@ export class Game {
             if (this.isPaused) this.resumeGame();
             else this.pauseGame();
         } else if (event.code === 'Space') {
-            if (this.isGameOver) this.restartGame();
+            if (this.isGameOver && document.activeElement.tagName !== 'INPUT') {
+                this.restartGame();
+            }
         }
     }
 
